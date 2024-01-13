@@ -10,7 +10,16 @@ import SwiftUI
 struct ContentView: View {
     @Binding var document: ScreenableDocument
     var body: some View {
-        TextEditor(text: $document.caption)
+        HStack(spacing: 20) {
+            RenderView(document: document)
+            
+            VStack(alignment: .leading) {
+                Text("Caption")
+                    .bold()
+                TextEditor(text: $document.caption	)
+            }
+        }
+        .padding()
     }
 }
 
