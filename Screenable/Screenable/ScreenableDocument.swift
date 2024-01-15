@@ -12,8 +12,15 @@ import UniformTypeIdentifiers
 struct ScreenableDocument: FileDocument, Codable {
     static var readableContentTypes = [UTType(exportedAs: "BJ914.screenable")]
 
-
+    var font = "Helvetica Neue"
+    var fontSize = 16
     var caption = ""
+    var backgroundImage = ""
+    var userImage: Data? 
+    
+    var captionColor = Color.black
+    var backgoundColorTop = Color.clear
+    var backgroundColorBottom = Color.clear
     
     init(configuration: ReadConfiguration) throws {
         if let data = configuration.file.regularFileContents {
