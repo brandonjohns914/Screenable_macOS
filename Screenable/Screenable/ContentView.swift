@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ContentView: View {
+@MainActor struct ContentView: View {
     @Binding var document: ScreenableDocument
     let fonts = Bundle.main.loadStringArray(from: "Fonts.txt")
     let backgrounds = Bundle.main.loadStringArray(from: "Backgrounds.txt")
@@ -60,6 +60,17 @@ struct ContentView: View {
                     Text("Background color")
                         .bold()
                     
+                    Picker("Drop shadow location", selection: $document.dropShadowLocation) {
+                        Text("None").tag(0)
+                        Text("Text").tag(1)
+                        Text("Device").tag(2)
+                        Text("Both").tag(3)
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    
+                    Stepper("Shadow Radius: \(document.dropShadowStrength)pt", value: $document.dropShadowStrength, in: 1...20)
+                    
                     Text("If set to non-transparent, this will be drawn over the background image.")
                             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -73,6 +84,12 @@ struct ContentView: View {
             .frame(width: 250)
         }
         .padding()
+        .onCommand(#selector(AppCommands.export)) { export() }
+        .toolbar {
+            Button("Export") { export() }
+            ShareLink(item: snapshotToURL())
+        }
+       
         
     }
     
@@ -81,6 +98,40 @@ struct ContentView: View {
         let loadedImage = try? Data(contentsOf: url)
         document.userImage = loadedImage
         return true
+    }
+    
+    func createSnapshot() -> Data? {
+        let renderer = ImageRenderer(content: RenderView(document: document))
+        
+        if let tiff = renderer.nsImage?.tiffRepresentation {
+            let bitmap = NSBitmapImageRep(data: tiff)
+            return bitmap?.representation(using: .png, properties: [:])
+        } else {
+            return nil
+        }
+    }
+    
+    func export() {
+        guard let png = createSnapshot() else {return}
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.png]
+        
+        panel.begin { result in
+            if result == .OK {
+                guard let url = panel.url else {return}
+                
+                do {
+                    try png.write(to: url)
+                } catch {
+                    print(error.localizedDescription)
+                }
+            }
+        }
+    }
+    func snapshotToURL() -> URL {
+        let url = URL.temporaryDirectory.appending(path: "ScreenableExport").appendingPathExtension("png")
+        try? createSnapshot()?.write(to: url)
+        return url
     }
 }
 

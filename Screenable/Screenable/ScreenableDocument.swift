@@ -22,6 +22,9 @@ struct ScreenableDocument: FileDocument, Codable {
     var backgoundColorTop = Color.clear
     var backgroundColorBottom = Color.clear
     
+    var dropShadowLocation = 0
+    var dropShadowStrength = 1
+    
     init(configuration: ReadConfiguration) throws {
         if let data = configuration.file.regularFileContents {
             self = try JSONDecoder().decode(ScreenableDocument.self, from: data)

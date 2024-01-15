@@ -13,6 +13,18 @@ struct ScreenableApp: App {
         DocumentGroup(newDocument: ScreenableDocument()) { file in
             ContentView(document: file.$document)
         }
-        .windowResizability(.contentSize)
+        .commands{
+            CommandMenu("Export") {
+                Button("Export as PNG") {
+                    NSApp.sendAction(#selector(AppCommands.export), to: nil, from: nil)
+                }
+                .keyboardShortcut("e")
+            }
+        }
     }
+    
+}
+
+@objc protocol AppCommands {
+    func export()
 }
